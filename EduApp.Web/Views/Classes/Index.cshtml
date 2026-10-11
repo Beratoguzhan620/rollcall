@@ -1,0 +1,33 @@
+﻿@using EduApp.Web.Data.Entities
+@model List<Class>
+
+<h3>Sınıflar</h3>
+
+<a asp-controller="Classes" asp-action="Create" class="btn btn-success mb-2">Sınıf Ekle</a>
+
+<table class="table table-striped table-hover">
+
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Sınıf Adı</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.Name</td>
+                <td>
+                    <a asp-controller="Classes" asp-action="Detail" asp-route-id="@c.Id" class="btn btn-primary">Detay</a>
+                    <a asp-controller="Classes" asp-action="Edit" asp-route-id="@c.Id" class="btn btn-warning">Düzenle</a>
+                    <a asp-controller="Classes" asp-action="Delete" asp-route-id="@c.Id" class="btn btn-danger">Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+
+</table>
+

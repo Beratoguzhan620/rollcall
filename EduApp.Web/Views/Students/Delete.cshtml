@@ -1,0 +1,31 @@
+﻿@using EduApp.Web.Data.Entities
+@model StudentDetailViewModel
+
+
+<h1>Öğrenci Sil</h1>
+
+<p>Bu öğrenciyi silmek istediğinize emin misiniz?</p>
+
+<form asp-action="DeleteConfirm" asp-controller="Students">
+
+    <input asp-for="Id" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="FirstName" class="form-label">Ad</label>
+        <input asp-for="FirstName" class="form-control" disabled/>
+    </div>
+    <div class="mb-3">
+        <label asp-for="LastName" class="form-label">Soyad</label>
+        <input asp-for="LastName" class="form-control" disabled />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">E-posta</label>
+        <input asp-for="Email" class="form-control" type="email" disabled />
+    </div>
+    <div class="mb-3">
+        <label asp-for="ClassName" class="form-label">Sınıf</label>
+        <input asp-for="ClassName" class="form-control" disabled />
+    </div>
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" asp-controller="Students" class="btn btn-secondary">Geri Dön</a>
+</form>

@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>@ViewData["Title"] - EduApp</title>
+    <partial name="Partials/Layout/_Head.cshtml" />
+    @RenderSection("Styles", required: false)
+</head>
+
+<body id="page-top">
+
+
+    <div id="wrapper">
+        <partial name="Partials/Layout/_Sidebar.cshtml" />
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+
+                <partial name="Partials/Layout/_Topbar.cshtml" />
+
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+            </div>
+
+            <partial name="Partials/Layout/_Footer.cshtml" />
+        </div>
+    </div>
+
+    <partial name="Partials/Layout/_ScrollToTop.cshtml" />
+
+    <partial name="Partials/Layout/_LogoutModal.cshtml" />
+
+    <partial name="Partials/Layout/_Scripts.cshtml" />
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

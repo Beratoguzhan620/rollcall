@@ -1,0 +1,47 @@
+﻿@model EditStudentViewModel
+
+
+<h1>Öğrenci Düzenle</h1>
+
+<form asp-action="Edit" asp-controller="Students">
+
+    <div class="mb-3">
+        <label asp-for="Id" class="form-label">Id</label>
+        <input asp-for="Id" class="form-control" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FirstName" class="form-label">Ad</label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="LastName" class="form-label">Soyad</label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">E-posta</label>
+        <input asp-for="Email" class="form-control" type="email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+
+    <div class="mb-3">
+        <label asp-for="ClassId" class="form-label">Sınıf</label>
+
+        <select class="form-control" asp-for="ClassId">
+            <option value="">Sınıf Seçiniz</option>
+            @foreach (var classItem in ViewBag.Classes)
+            {
+                <option value="@classItem.Id">@classItem.Name</option>
+            }
+        </select>
+
+        <span asp-validation-for="ClassId" class="text-danger"></span>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" asp-controller="Students" class="btn btn-secondary">İptal</a>
+</form>

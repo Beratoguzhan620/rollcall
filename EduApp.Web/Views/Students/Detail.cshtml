@@ -1,0 +1,31 @@
+﻿@using EduApp.Web.Data.Entities
+@model StudentDetailViewModel
+
+
+<h1>Öğrenci Detay</h1>
+
+<form asp-action="Edit" asp-controller="Students">
+
+    <div class="mb-3">
+        <label asp-for="Id" class="form-label">Id</label>
+        <input asp-for="Id" class="form-control" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FirstName" class="form-label">Ad</label>
+        <input asp-for="FirstName" class="form-control" disabled/>
+    </div>
+    <div class="mb-3">
+        <label asp-for="LastName" class="form-label">Soyad</label>
+        <input asp-for="LastName" class="form-control" disabled />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">E-posta</label>
+        <input asp-for="Email" class="form-control" type="email" disabled />
+    </div>
+    <div class="mb-3">
+        <label asp-for="ClassName" class="form-label">Sınıf</label>
+        <input asp-for="ClassName" class="form-control" disabled />
+    </div>
+    <a asp-action="Index" asp-controller="Students" class="btn btn-secondary">Geri Dön</a>
+</form>
