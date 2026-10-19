@@ -1,0 +1,74 @@
+@model Rollcall.Application.Dashboard.DashboardSummary
+@{
+    ViewData["Title"] = "Özet";
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<div class="page-header">
+    <div>
+        <h1>Özet</h1>
+        <p>Okulun sınıfları ve öğrenci sayıları.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Students" asp-action="Create"><i class="bi bi-person-plus"></i>Öğrenci ekle</a>
+</div>
+
+<div class="stat-grid">
+    <a class="stat-card" asp-controller="Classes" asp-action="Index">
+        <span class="label"><i class="bi bi-grid-3x2-gap"></i>Sınıf</span>
+        <span class="value">@Model.ClassCount</span>
+        <span class="hint">@string.Join(", ", Model.Classes.Select(c => c.Name).Take(5))</span>
+    </a>
+    <a class="stat-card" asp-controller="Students" asp-action="Index">
+        <span class="label"><i class="bi bi-people"></i>Öğrenci</span>
+        <span class="value">@Display.Number(Model.StudentCount)</span>
+        <span class="hint">okulda kayıtlı</span>
+    </a>
+    <div class="stat-card">
+        <span class="label"><i class="bi bi-person-dash"></i>Ayrılan</span>
+        <span class="value">@Model.InactiveCount</span>
+        <span class="hint">kaydı korunan eski öğrenci</span>
+    </div>
+    <div class="stat-card">
+        <span class="label"><i class="bi bi-diagram-3"></i>Sınıf mevcudu</span>
+        <span class="value">@(Model.ClassCount == 0 ? "—" : Math.Round(Model.StudentCount / (double)Model.ClassCount).ToString())</span>
+        <span class="hint">ortalama öğrenci</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h6 m-0">Sınıflar</h2>
+        <a class="small" asp-controller="Classes" asp-action="Index">Tümü</a>
+    </div>
+    @if (Model.Classes.Count == 0)
+    {
+        <partial name="Partials/_EmptyState" model="@(("Henüz sınıf yok", "İlk sınıfı ekleyerek başlayın.", "bi-grid-3x2-gap"))" />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Sınıf</th>
+                        <th>Sınıf öğretmeni</th>
+                        <th class="d-none d-sm-table-cell">Derslik</th>
+                        <th class="num">Öğrenci</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Classes)
+                    {
+                        <tr>
+                            <td><a class="fw-medium" asp-controller="Classes" asp-action="Detail" asp-route-id="@c.Id">@c.Name</a></td>
+                            <td>@(c.AdvisorName ?? "—")</td>
+                            <td class="d-none d-sm-table-cell text-muted">@(c.Room ?? "—")</td>
+                            <td class="num">@c.StudentCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

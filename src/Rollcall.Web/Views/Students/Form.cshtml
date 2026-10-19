@@ -1,0 +1,72 @@
+@model StudentFormModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Öğrenciyi düzenle" : "Yeni öğrenci";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Öğrenciler</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>Okul numarası benzersiz olmalı. Adlar kaydedilirken baş harfleri büyütülür.</p>
+    </div>
+</div>
+
+<form class="card form-card" method="post" asp-action="@(Model.IsEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" novalidate>
+    <div class="card-body">
+        <partial name="Partials/_ViewMessages" />
+        <div class="row g-3">
+            <div class="col-6 col-sm-4">
+                <label class="form-label" asp-for="StudentNumber"></label>
+                <input class="form-control font-mono" asp-for="StudentNumber" inputmode="numeric" autocomplete="off" />
+                <span class="field-validation-error" asp-validation-for="StudentNumber"></span>
+            </div>
+            <div class="col-6 col-sm-4">
+                <label class="form-label" asp-for="ClassId"></label>
+                <select class="form-select" asp-for="ClassId" asp-items="Model.Classes">
+                    <option value="">Seçin</option>
+                </select>
+                <span class="field-validation-error" asp-validation-for="ClassId"></span>
+            </div>
+            <div class="col-12 col-sm-6">
+                <label class="form-label" asp-for="FirstName"></label>
+                <input class="form-control" asp-for="FirstName" autocomplete="off" />
+                <span class="field-validation-error" asp-validation-for="FirstName"></span>
+            </div>
+            <div class="col-12 col-sm-6">
+                <label class="form-label" asp-for="LastName"></label>
+                <input class="form-control" asp-for="LastName" autocomplete="off" />
+                <span class="field-validation-error" asp-validation-for="LastName"></span>
+            </div>
+            <div class="col-12">
+                <label class="form-label" asp-for="Email"></label>
+                <input class="form-control" asp-for="Email" type="email" autocomplete="off" />
+                <div class="form-text">İsteğe bağlı.</div>
+                <span class="field-validation-error" asp-validation-for="Email"></span>
+            </div>
+            @if (Model.IsEdit)
+            {
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="IsActive" />
+                        <label class="form-check-label" asp-for="IsActive"></label>
+                    </div>
+                    <div class="form-text">Okuldan ayrılan öğrencinin işaretini kaldırın; kayıtları silinmez, listelerde görünmez.</div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+        <a class="btn btn-outline-secondary" asp-action="@(Model.IsEdit ? "Detail" : "Index")" asp-route-id="@Model.Id">Vazgeç</a>
+        <button class="btn btn-primary" type="submit">@(Model.IsEdit ? "Kaydet" : "Öğrenciyi ekle")</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

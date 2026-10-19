@@ -1,0 +1,35 @@
+@model List<ClassRow>
+@{
+    ViewData["Title"] = "Sınıflar";
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<div class="page-header">
+    <div>
+        <h1>Sınıflar</h1>
+        <p>Öğrencisi olan bir sınıf silinemez; önce öğrencileri başka bir sınıfa taşıyın.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i>Yeni sınıf</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card">
+        <partial name="Partials/_EmptyState" model="@(("Henüz sınıf yok", "İlk sınıfı ekleyerek başlayın.", "bi-grid-3x2-gap"))" />
+    </div>
+}
+else
+{
+    <div class="class-grid">
+        @foreach (var c in Model)
+        {
+            <a class="class-card" asp-action="Detail" asp-route-id="@c.Id">
+                <span class="class-name">@c.Name</span>
+                <span class="class-meta"><i class="bi bi-person-badge" aria-hidden="true"></i>@(c.AdvisorName ?? "Sınıf öğretmeni atanmadı")</span>
+                <span class="class-meta"><i class="bi bi-door-open" aria-hidden="true"></i>@(c.Room ?? "Derslik yok")</span>
+                <span class="class-count"><span class="font-mono">@c.StudentCount</span> öğrenci</span>
+            </a>
+        }
+    </div>
+}
