@@ -9,6 +9,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Student> Students => Set<Student>();
 
+    public DbSet<AttendanceRecord> Attendance => Set<AttendanceRecord>();
+
+    public DbSet<Course> Courses => Set<Course>();
+
+    public DbSet<Exam> Exams => Set<Exam>();
+
+    public DbSet<Grade> Grades => Set<Grade>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SchoolClass>(entity =>
@@ -40,6 +48,43 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(s => s.ClassId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<AttendanceRecord>(entity =>
+        {
+            entity.ToTable("AttendanceRecords");
+            entity.HasIndex(a => new { a.StudentId, a.Date }).IsUnique();
+            entity.HasIndex(a => new { a.ClassId, a.Date });
+            entity.HasIndex(a => new { a.Date, a.Status });
+            entity.HasOne(a => a.Student).WithMany().HasForeignKey(a => a.StudentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(a => a.Class).WithMany().HasForeignKey(a => a.ClassId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<Course>(entity =>
+        {
+            entity.Property(c => c.Name).HasMaxLength(Limits.CourseName).IsRequired();
+            entity.HasIndex(c => c.Name).IsUnique();
+            entity.HasData(CourseSeed.All);
+        });
+
+        modelBuilder.Entity<Exam>(entity =>
+        {
+            entity.Property(e => e.Title).HasMaxLength(Limits.ExamTitle).IsRequired();
+            entity.HasIndex(e => new { e.ClassId, e.CourseId, e.Date });
+            entity.HasOne(e => e.Class).WithMany().HasForeignKey(e => e.ClassId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Course).WithMany(c => c.Exams).HasForeignKey(e => e.CourseId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Grade>(entity =>
+        {
+            entity.ToTable("Grades", table =>
+            {
+                table.HasCheckConstraint("CK_Grades_Score", "[Score] BETWEEN 0 AND 100");
+            });
+            entity.Property(g => g.Score).HasPrecision(5, 2);
+            entity.HasIndex(g => new { g.ExamId, g.StudentId }).IsUnique();
+            entity.HasOne(g => g.Exam).WithMany(e => e.Grades).HasForeignKey(g => g.ExamId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(g => g.Student).WithMany().HasForeignKey(g => g.StudentId).OnDelete(DeleteBehavior.NoAction);
+        });
     }
 }
 
@@ -52,4 +97,6 @@ public static class Limits
     public const int StudentNumber = 10;
     public const int NamePart = 50;
     public const int Email = 100;
+    public const int CourseName = 60;
+    public const int ExamTitle = 60;
 }
