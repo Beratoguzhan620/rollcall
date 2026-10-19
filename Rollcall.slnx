@@ -4,4 +4,7 @@
     <Project Path="src/Rollcall.Data/Rollcall.Data.csproj" />
     <Project Path="src/Rollcall.Web/Rollcall.Web.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Rollcall.Application.Tests/Rollcall.Application.Tests.csproj" />
+  </Folder>
 </Solution>
