@@ -11,9 +11,9 @@ Her aşama ayrı bir branch ve PR olarak yapılır (`stage/<no>-<kisa-ad>`). Bir
 > Kapsam: EduTrack'ten farklılaşması için "Rollcall" — sınıf, öğrenci, **yoklama** ve **not** takibi.
 
 ## Aşama 1 — Temel ve tasarım
-- [ ] Ad/marka "Rollcall"; SB Admin 2 kaldırılır, `docs/DESIGN.md` token'larıyla yeni layout
-- [ ] EF Core migrations + seed (5 sınıf, 120 öğrenci)
-- [ ] Sınıflar CRUD'u (ViewModel'lerle, StudentsController'daki gibi) — TODO kapanır
+- [x] Ad/marka "Rollcall"; SB Admin 2 kaldırılır, `docs/DESIGN.md` token'larıyla yeni layout
+- [x] EF Core migrations + seed (5 sınıf, 120 öğrenci)
+- [x] Sınıflar CRUD'u (ViewModel'lerle, StudentsController'daki gibi) — TODO kapanır
 
 ## Aşama 2 — Yoklama ve notlar
 - [ ] Yoklama: sınıf + tarih seç → öğrenci listesinde Var/Yok/Geç işaretle, toplu kaydet

@@ -1,0 +1,64 @@
+@model ClassDetailViewModel
+@{
+    var c = Model.Class;
+    ViewData["Title"] = $"{c.Name} sınıfı";
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Sınıflar</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@c.Name</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1>@c.Name sınıfı</h1>
+        <p>@(c.AdvisorName is null ? "Sınıf öğretmeni atanmadı" : $"Sınıf öğretmeni: {c.AdvisorName}") · @(c.Room ?? "derslik yok") · @c.StudentCount öğrenci</p>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@c.Id"><i class="bi bi-pencil"></i>Düzenle</a>
+        <form method="post" asp-action="Delete" asp-route-id="@c.Id">
+            <button class="btn btn-outline-danger" type="submit"
+                    data-confirm="@c.Name sınıfı silinecek." data-confirm-title="Sınıfı sil" data-confirm-ok="Sil"><i class="bi bi-trash"></i>Sil</button>
+        </form>
+        <a class="btn btn-primary" asp-controller="Students" asp-action="Create" asp-route-classId="@c.Id"><i class="bi bi-person-plus"></i>Öğrenci ekle</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h2 class="h6 m-0">Öğrenci listesi</h2></div>
+    @if (Model.Students.Count == 0)
+    {
+        <partial name="Partials/_EmptyState" model="@(("Bu sınıfta öğrenci yok", "Öğrenci ekleyin ya da başka bir sınıftan taşıyın.", "bi-people"))" />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="num" style="width: 64px">Sıra</th>
+                        <th style="width: 110px">Numara</th>
+                        <th>Ad soyad</th>
+                        <th class="d-none d-md-table-cell">E-posta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Students.Count; i++)
+                    {
+                        var s = Model.Students[i];
+                        <tr>
+                            <td class="num text-muted">@(i + 1)</td>
+                            <td class="font-mono">@s.StudentNumber</td>
+                            <td><a asp-controller="Students" asp-action="Detail" asp-route-id="@s.Id">@s.FullName</a></td>
+                            <td class="d-none d-md-table-cell text-muted">@(s.Email ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

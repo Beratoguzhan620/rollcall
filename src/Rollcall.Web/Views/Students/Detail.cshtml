@@ -1,0 +1,54 @@
+@model StudentRow
+@{
+    ViewData["Title"] = Model.FullName;
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Öğrenciler</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.FullName</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div class="d-flex align-items-center gap-3">
+        <span class="avatar avatar-lg" aria-hidden="true">@Display.Initials(Model.FirstName, Model.LastName)</span>
+        <div>
+            <h1>@Model.FullName</h1>
+            <p class="mt-1">
+                <span class="font-mono">@Model.StudentNumber</span> ·
+                <a asp-controller="Classes" asp-action="Detail" asp-route-id="@Model.ClassId">@Model.ClassName sınıfı</a>
+                @if (!Model.IsActive)
+                {
+                    <span class="badge badge-neutral ms-1">Okuldan ayrıldı</span>
+                }
+            </p>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i>Düzenle</a>
+        <form method="post" asp-action="Delete" asp-route-id="@Model.Id">
+            <button class="btn btn-outline-danger" type="submit"
+                    data-confirm="@Model.FullName kalıcı olarak silinecek. Okuldan ayrılan öğrenciler için silmek yerine &quot;Okulda kayıtlı&quot; işaretini kaldırın."
+                    data-confirm-title="Öğrenciyi sil" data-confirm-ok="Sil"><i class="bi bi-trash"></i>Sil</button>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="max-width: 560px">
+    <div class="card-header"><h2 class="h6 m-0">Bilgiler</h2></div>
+    <div class="card-body">
+        <dl class="spec-list mb-0">
+            <dt>Okul numarası</dt>
+            <dd class="font-mono">@Model.StudentNumber</dd>
+            <dt>Sınıf</dt>
+            <dd>@Model.ClassName</dd>
+            <dt>E-posta</dt>
+            <dd>@(Model.Email ?? "—")</dd>
+            <dt>Durum</dt>
+            <dd>@(Model.IsActive ? "Okulda kayıtlı" : "Okuldan ayrıldı")</dd>
+        </dl>
+    </div>
+</div>

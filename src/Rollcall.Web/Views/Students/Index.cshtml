@@ -1,0 +1,80 @@
+@model StudentListViewModel
+@{
+    ViewData["Title"] = "Öğrenciler";
+    var q = Model.Query;
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<div class="page-header">
+    <div>
+        <h1>Öğrenciler</h1>
+        <p>Ad, soyad ya da okul numarasıyla arayın; sınıfa göre süzün.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create" asp-route-classId="@q.ClassId"><i class="bi bi-person-plus"></i>Yeni öğrenci</a>
+</div>
+
+<div class="card">
+    <form class="filter-bar" method="get" asp-action="Index" role="search">
+        <div class="search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control form-control-sm" type="search" name="search" value="@q.Search" placeholder="Ad, soyad veya numara" aria-label="Ad, soyad veya numara" />
+        </div>
+        <select class="form-select form-select-sm" name="classId" aria-label="Sınıf">
+            <option value="">Tüm sınıflar</option>
+            @foreach (var c in Model.Classes)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+        <div class="form-check ms-1">
+            <input class="form-check-input" type="checkbox" id="all" name="all" value="true" checked="@q.IncludeInactive" />
+            <label class="form-check-label small" for="all">Ayrılanlar da</label>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" type="submit">Filtrele</button>
+        @if (Model.IsFiltered)
+        {
+            <a class="btn btn-ghost btn-sm" asp-action="Index">Temizle</a>
+        }
+    </form>
+
+    @if (Model.Result.Items.Count == 0)
+    {
+        <partial name="Partials/_EmptyState" model="@(Model.IsFiltered
+            ? ("Öğrenci bulunamadı", "Aramayı ya da sınıf filtresini değiştirip tekrar deneyin.", "bi-search")
+            : ("Henüz öğrenci yok", "İlk öğrenciyi ekleyerek başlayın.", "bi-people"))" />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 110px">Numara</th>
+                        <th>Ad soyad</th>
+                        <th style="width: 90px">Sınıf</th>
+                        <th class="d-none d-md-table-cell">E-posta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Result.Items)
+                    {
+                        <tr class="@(s.IsActive ? null : "row-muted")">
+                            <td class="font-mono">@s.StudentNumber</td>
+                            <td>
+                                <a class="fw-medium" asp-action="Detail" asp-route-id="@s.Id">@s.FullName</a>
+                                @if (!s.IsActive)
+                                {
+                                    <span class="badge badge-neutral ms-1">Ayrıldı</span>
+                                }
+                            </td>
+                            <td><a class="text-reset" asp-controller="Classes" asp-action="Detail" asp-route-id="@s.ClassId">@s.ClassName</a></td>
+                            <td class="d-none d-md-table-cell text-muted">@(s.Email ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <partial name="Partials/_Pager" model="Model.Pager" />
+    }
+</div>

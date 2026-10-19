@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Rollcall.Application/Rollcall.Application.csproj" />
+    <Project Path="src/Rollcall.Data/Rollcall.Data.csproj" />
+    <Project Path="src/Rollcall.Web/Rollcall.Web.csproj" />
+  </Folder>
+</Solution>
