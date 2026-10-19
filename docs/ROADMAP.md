@@ -22,6 +22,7 @@ Her aşama ayrı bir branch ve PR olarak yapılır (`stage/<no>-<kisa-ad>`). Bir
 - [x] Dashboard: bugünkü yoklama durumu, devamsızlığı yüksek öğrenciler
 
 ## Aşama 3 — Cila, test, yayın
-- [ ] Arama/filtre/sayfalama; CSV dışa aktarma (yoklama ve notlar)
-- [ ] Servis katmanı ayrıştırma + xUnit testleri + GitHub Actions
-- [ ] Canlı demo, ekran görüntüleri, README (TR + EN)
+- [x] Arama/filtre/sayfalama; CSV dışa aktarma (yoklama ve notlar)
+- [x] Servis katmanı ayrıştırma + xUnit testleri + GitHub Actions
+- [x] Ekran görüntüleri, README (TR + EN)
+- [ ] Canlı demo

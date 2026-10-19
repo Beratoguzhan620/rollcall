@@ -164,6 +164,17 @@ for (const [device, options] of Object.entries(viewports)) {
     await shot(page, `${device}-exam-sheet-saved`);
     expect((await inputs.nth(2).inputValue()) === "88,25", "a dot decimal should be saved as 88,25");
 
+    // Exports.
+    const attendanceCsv = await page.request.get(`${baseUrl}/attendance/export?classId=1&format=csv`);
+    expect((attendanceCsv.headers()["content-type"] ?? "").startsWith("text/csv"), "attendance export should be CSV");
+    expect((await attendanceCsv.text()).includes("Ad soyad"), "attendance CSV should have a header row");
+    const gradeBook = await page.request.get(`${baseUrl}/exams/export?classId=1&format=xlsx`);
+    expect((gradeBook.headers()["content-type"] ?? "").includes("spreadsheetml"), "grade book export should be a workbook");
+    await page.goto(`${baseUrl}/exams?classId=1`);
+    await page.click("button:has-text('Dışa aktar')");
+    await page.waitForTimeout(200);
+    await shot(page, `${device}-exams-export-menu`);
+
     // A student with records cannot be deleted.
     await page.goto(`${baseUrl}/students/5`);
     await confirm(page, "button:has-text('Sil')");
