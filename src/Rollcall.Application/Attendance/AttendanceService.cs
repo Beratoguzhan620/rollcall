@@ -26,6 +26,8 @@ public sealed record StudentAttendance(AttendanceSummary Summary, List<AbsenceDa
 
 public sealed record ClassToday(int ClassId, string ClassName, int StudentCount, bool IsTaken, int Absent, int Late);
 
+public sealed record AttendanceExportRow(DateOnly Date, string ClassName, string StudentNumber, string FullName, AttendanceStatus Status);
+
 public sealed record AbsenceLeader(int StudentId, string FullName, string ClassName, int Absent, int Late, int Days);
 
 public sealed class AttendanceService(AppDbContext context, TimeProvider timeProvider)
@@ -158,6 +160,19 @@ public sealed class AttendanceService(AppDbContext context, TimeProvider timePro
             var record = records.FirstOrDefault(r => r.ClassId == c.Id);
             return new ClassToday(c.Id, $"{c.GradeLevel}-{c.Section}", c.Count, record is not null, record?.Absent ?? 0, record?.Late ?? 0);
         }).ToList();
+    }
+
+    /// <summary>Every record for a class between two dates (inclusive), oldest first, for export.</summary>
+    public async Task<List<AttendanceExportRow>> GetRecordsAsync(int classId, DateOnly from, DateOnly to)
+    {
+        var rows = await context.Attendance
+            .AsNoTracking()
+            .Where(a => a.ClassId == classId && a.Date >= from && a.Date <= to)
+            .OrderBy(a => a.Date).ThenBy(a => a.Student!.LastName).ThenBy(a => a.Student!.FirstName)
+            .Select(a => new { a.Date, a.Class!.GradeLevel, a.Class.Section, a.Student!.StudentNumber, a.Student.FirstName, a.Student.LastName, a.Status })
+            .ToListAsync();
+
+        return rows.Select(r => new AttendanceExportRow(r.Date, $"{r.GradeLevel}-{r.Section}", r.StudentNumber, $"{r.FirstName} {r.LastName}", r.Status)).ToList();
     }
 
     /// <summary>Active students with the most absent days, at or above <paramref name="minimumAbsent"/>.</summary>

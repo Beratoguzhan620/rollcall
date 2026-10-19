@@ -27,6 +27,11 @@ public sealed record StudentGrades(List<CourseResult> Courses)
         : Math.Round(Courses.Where(c => c.Average is not null).Average(c => c.Average!.Value), 2);
 }
 
+/// <summary>One row per student with a score per exam (by exam id), for the class grade book export.</summary>
+public sealed record GradeBook(List<ExamRow> Exams, List<GradeBookRow> Rows);
+
+public sealed record GradeBookRow(string StudentNumber, string FullName, Dictionary<int, decimal> Scores);
+
 public sealed class GradeService(AppDbContext context, TimeProvider timeProvider)
 {
     public Task<List<CourseItem>> GetCoursesAsync() =>
@@ -173,6 +178,33 @@ public sealed class GradeService(AppDbContext context, TimeProvider timeProvider
             .GroupBy(r => new { r.CourseId, r.CourseName })
             .OrderBy(g => g.Key.CourseId)
             .Select(g => new CourseResult(g.Key.CourseId, g.Key.CourseName, g.OrderBy(r => r.Date).Select(r => (r.Title, r.Date, r.Score)).ToList()))
+            .ToList());
+    }
+
+    /// <summary>The whole grade book of a class: graded exams oldest first and every active student's scores.</summary>
+    public async Task<GradeBook> GetGradeBookAsync(int classId)
+    {
+        var exams = (await GetExamsAsync(classId)).Where(e => e.GradedCount > 0).OrderBy(e => e.CourseId).ThenBy(e => e.Date).ToList();
+        var examIds = exams.Select(e => e.Id).ToList();
+
+        var grades = await context.Grades
+            .AsNoTracking()
+            .Where(g => examIds.Contains(g.ExamId))
+            .Select(g => new { g.StudentId, g.ExamId, g.Score })
+            .ToListAsync();
+
+        var students = await context.Students
+            .AsNoTracking()
+            .Where(s => s.ClassId == classId && s.IsActive)
+            .OrderBy(s => s.LastName).ThenBy(s => s.FirstName)
+            .Select(s => new { s.Id, s.StudentNumber, s.FirstName, s.LastName })
+            .ToListAsync();
+
+        return new GradeBook(exams, students
+            .Select(s => new GradeBookRow(
+                s.StudentNumber,
+                $"{s.FirstName} {s.LastName}",
+                grades.Where(g => g.StudentId == s.Id).ToDictionary(g => g.ExamId, g => g.Score)))
             .ToList());
     }
 
