@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Rollcall.Application.Attendance;
 using Rollcall.Application.Common;
+using Rollcall.Application.Grades;
 using Rollcall.Application.Students;
 using Rollcall.Web.Infrastructure;
 using Rollcall.Web.Models;
@@ -7,7 +9,7 @@ using Rollcall.Web.Models;
 namespace Rollcall.Web.Controllers;
 
 [Route("students")]
-public sealed class StudentsController(StudentService students, Lookups lookups) : Controller
+public sealed class StudentsController(StudentService students, AttendanceService attendance, GradeService grades, Lookups lookups) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(string? search, int? classId, bool all = false, int page = 1)
@@ -25,7 +27,15 @@ public sealed class StudentsController(StudentService students, Lookups lookups)
     public async Task<IActionResult> Detail(int id)
     {
         var student = await students.GetAsync(id);
-        return student is null ? NotFound() : View(student);
+        if (student is null)
+            return NotFound();
+
+        return View(new StudentDetailViewModel
+        {
+            Student = student,
+            Attendance = await attendance.GetStudentAsync(id),
+            Grades = await grades.GetStudentAsync(id),
+        });
     }
 
     [HttpGet("new")]
@@ -103,7 +113,7 @@ public sealed class StudentsController(StudentService students, Lookups lookups)
             return NotFound();
 
         TempData[result.Success ? "SuccessMessage" : "ErrorMessage"] = result.Message;
-        return RedirectToAction(nameof(Index));
+        return result.Success ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Detail), new { id });
     }
 
     private async Task<IActionResult> FormAsync(StudentFormModel model)

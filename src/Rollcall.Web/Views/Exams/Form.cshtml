@@ -1,0 +1,65 @@
+@model ExamFormModel
+@{
+    ViewData["Title"] = "Yeni sınav";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Sınavlar</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Yeni sınav</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1>Yeni sınav</h1>
+        <p>Kaydettikten sonra not giriş ekranı açılır.</p>
+    </div>
+</div>
+
+<form class="card form-card" method="post" asp-action="Create" novalidate>
+    <div class="card-body">
+        <partial name="Partials/_ViewMessages" />
+        <div class="row g-3">
+            <div class="col-6">
+                <label class="form-label" asp-for="ClassId"></label>
+                <select class="form-select" asp-for="ClassId" asp-items="Model.Classes">
+                    <option value="">Seçin</option>
+                </select>
+                <span class="field-validation-error" asp-validation-for="ClassId"></span>
+            </div>
+            <div class="col-6">
+                <label class="form-label" asp-for="CourseId"></label>
+                <select class="form-select" asp-for="CourseId" asp-items="Model.Courses">
+                    <option value="">Seçin</option>
+                </select>
+                <span class="field-validation-error" asp-validation-for="CourseId"></span>
+            </div>
+            <div class="col-12 col-sm-7">
+                <label class="form-label" asp-for="Title"></label>
+                <input class="form-control" asp-for="Title" autocomplete="off" list="examTitles" />
+                <datalist id="examTitles">
+                    <option value="1. yazılı"></option>
+                    <option value="2. yazılı"></option>
+                    <option value="3. yazılı"></option>
+                    <option value="Proje"></option>
+                    <option value="Performans"></option>
+                </datalist>
+                <span class="field-validation-error" asp-validation-for="Title"></span>
+            </div>
+            <div class="col-12 col-sm-5">
+                <label class="form-label" asp-for="Date"></label>
+                <input class="form-control" asp-for="Date" />
+                <span class="field-validation-error" asp-validation-for="Date"></span>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+        <a class="btn btn-outline-secondary" asp-action="Index">Vazgeç</a>
+        <button class="btn btn-primary" type="submit">Sınavı ekle</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

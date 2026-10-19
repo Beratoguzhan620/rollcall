@@ -22,6 +22,169 @@ namespace Rollcall.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Rollcall.Data.Entities.AttendanceRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId", "Date");
+
+                    b.HasIndex("Date", "Status");
+
+                    b.HasIndex("StudentId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("AttendanceRecords", (string)null);
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Course", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Courses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Türk Dili ve Edebiyatı"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Matematik"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Fizik"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Kimya"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Biyoloji"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Tarih"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Coğrafya"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "İngilizce"
+                        });
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Exam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("ClassId", "CourseId", "Date");
+
+                    b.ToTable("Exams");
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Grade", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ExamId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("Grades", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Grades_Score", "[Score] BETWEEN 0 AND 100");
+                        });
+                });
+
             modelBuilder.Entity("Rollcall.Data.Entities.SchoolClass", b =>
                 {
                     b.Property<int>("Id")
@@ -106,6 +269,63 @@ namespace Rollcall.Data.Migrations
                     b.ToTable("Students");
                 });
 
+            modelBuilder.Entity("Rollcall.Data.Entities.AttendanceRecord", b =>
+                {
+                    b.HasOne("Rollcall.Data.Entities.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Rollcall.Data.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Exam", b =>
+                {
+                    b.HasOne("Rollcall.Data.Entities.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Rollcall.Data.Entities.Course", "Course")
+                        .WithMany("Exams")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Grade", b =>
+                {
+                    b.HasOne("Rollcall.Data.Entities.Exam", "Exam")
+                        .WithMany("Grades")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rollcall.Data.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("Rollcall.Data.Entities.Student", b =>
                 {
                     b.HasOne("Rollcall.Data.Entities.SchoolClass", "Class")
@@ -115,6 +335,16 @@ namespace Rollcall.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Class");
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Course", b =>
+                {
+                    b.Navigation("Exams");
+                });
+
+            modelBuilder.Entity("Rollcall.Data.Entities.Exam", b =>
+                {
+                    b.Navigation("Grades");
                 });
 
             modelBuilder.Entity("Rollcall.Data.Entities.SchoolClass", b =>

@@ -1,0 +1,87 @@
+@model GradeSheetViewModel
+@{
+    var exam = Model.Sheet.Exam;
+    ViewData["Title"] = $"{exam.ClassName} {exam.CourseName} · {exam.Title}";
+    var scored = Model.Sheet.Rows.Where(r => r.Score is not null).Select(r => r.Score!.Value).ToList();
+    string Value(ScoreRow row) => Model.Posted is not null && Model.Posted.TryGetValue(row.StudentId, out var typed) ? typed ?? string.Empty : Display.Score(row.Score).Replace("—", string.Empty);
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Sınavlar</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@exam.ClassName · @exam.CourseName</li>
+    </ol>
+</nav>
+
+<div class="page-header">
+    <div>
+        <h1>@exam.CourseName · @exam.Title</h1>
+        <p>@exam.ClassName sınıfı · @Display.Date(exam.Date)</p>
+    </div>
+    <form method="post" asp-action="Delete" asp-route-id="@exam.Id">
+        <button class="btn btn-outline-danger" type="submit"
+                data-confirm="&quot;@exam.Title&quot; ve girilen @scored.Count not silinecek." data-confirm-title="Sınavı sil" data-confirm-ok="Sil"><i class="bi bi-trash"></i>Sınavı sil</button>
+    </form>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <span class="label">Ortalama</span>
+        <span class="value @Display.ScoreClass(exam.Average)">@Display.Score(exam.Average)</span>
+        <span class="hint">@scored.Count / @Model.Sheet.Rows.Count öğrencinin notu girildi</span>
+    </div>
+    <div class="stat-card">
+        <span class="label">En yüksek</span>
+        <span class="value">@Display.Score(scored.Count == 0 ? null : scored.Max())</span>
+    </div>
+    <div class="stat-card">
+        <span class="label">En düşük</span>
+        <span class="value">@Display.Score(scored.Count == 0 ? null : scored.Min())</span>
+    </div>
+    <div class="stat-card">
+        <span class="label">50'nin altında</span>
+        <span class="value @(scored.Any(s => s < 50) ? "score-low" : null)">@scored.Count(s => s < 50)</span>
+        <span class="hint">öğrenci</span>
+    </div>
+</div>
+
+<form class="card" method="post" asp-action="Sheet" asp-route-id="@exam.Id" novalidate>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h6 m-0">Notlar</h2>
+        <span class="small text-muted">0–100 arası; ondalık için virgül ya da nokta kullanabilirsiniz. Boş bırakılan not silinir.</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 96px">Numara</th>
+                    <th>Öğrenci</th>
+                    <th class="num" style="width: 160px">Not</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Sheet.Rows)
+                {
+                    var hasError = Model.Errors.TryGetValue(row.StudentId, out var error);
+                    <tr>
+                        <td class="font-mono text-muted">@row.StudentNumber</td>
+                        <td><label class="fw-medium" for="score-@row.StudentId">@row.FullName</label></td>
+                        <td class="num">
+                            <input class="form-control form-control-sm score-input @(hasError ? "input-validation-error" : null)" id="score-@row.StudentId"
+                                   name="scores[@row.StudentId]" value="@Value(row)" inputmode="decimal" autocomplete="off" />
+                            @if (hasError)
+                            {
+                                <span class="field-validation-error d-block">@error</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer d-flex justify-content-end">
+        <button class="btn btn-primary" type="submit">Notları kaydet</button>
+    </div>
+</form>

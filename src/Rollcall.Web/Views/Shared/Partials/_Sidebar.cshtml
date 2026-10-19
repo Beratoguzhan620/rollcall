@@ -16,6 +16,11 @@
             <a class="side-link@(Active("Home"))" aria-current="@Current("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2"></i>Özet</a>
         </nav>
         <nav>
+            <div class="nav-section-title">Günlük</div>
+            <a class="side-link@(Active("Attendance"))" aria-current="@Current("Attendance")" asp-controller="Attendance" asp-action="Index"><i class="bi bi-check2-square"></i>Yoklama</a>
+            <a class="side-link@(Active("Exams"))" aria-current="@Current("Exams")" asp-controller="Exams" asp-action="Index"><i class="bi bi-journal-text"></i>Sınavlar ve notlar</a>
+        </nav>
+        <nav>
             <div class="nav-section-title">Okul</div>
             <a class="side-link@(Active("Classes"))" aria-current="@Current("Classes")" asp-controller="Classes" asp-action="Index"><i class="bi bi-grid-3x2-gap"></i>Sınıflar</a>
             <a class="side-link@(Active("Students"))" aria-current="@Current("Students")" asp-controller="Students" asp-action="Index"><i class="bi bi-people"></i>Öğrenciler</a>

@@ -89,3 +89,72 @@ public sealed class StudentFormModel
 
     public StudentInput ToInput() => new(StudentNumber, FirstName, LastName, Email, ClassId ?? 0, IsActive);
 }
+
+public sealed class AttendanceViewModel
+{
+    public Rollcall.Application.Attendance.AttendanceSheet? Sheet { get; init; }
+
+    public required List<SelectListItem> Classes { get; init; }
+
+    public required DateOnly Date { get; init; }
+
+    public required DateOnly Today { get; init; }
+}
+
+public sealed class ExamListViewModel
+{
+    public required List<Rollcall.Application.Grades.ExamRow> Exams { get; init; }
+
+    public required List<SelectListItem> Classes { get; init; }
+
+    public required List<SelectListItem> Courses { get; init; }
+
+    public int? ClassId { get; init; }
+
+    public int? CourseId { get; init; }
+
+    public required DateOnly Today { get; init; }
+}
+
+public sealed class ExamFormModel
+{
+    [Display(Name = "Sınıf")]
+    [Required(ErrorMessage = "Bir sınıf seçin.")]
+    public int? ClassId { get; set; }
+
+    [Display(Name = "Ders")]
+    [Required(ErrorMessage = "Bir ders seçin.")]
+    public int? CourseId { get; set; }
+
+    [Display(Name = "Sınav adı")]
+    [Required(ErrorMessage = "Sınav adı zorunlu.")]
+    [StringLength(Limits.ExamTitle, MinimumLength = 2, ErrorMessage = "Sınav adı {2} ile {1} karakter arasında olmalı.")]
+    public string Title { get; set; } = "1. yazılı";
+
+    [Display(Name = "Tarih")]
+    [Required(ErrorMessage = "Tarih zorunlu.")]
+    public DateOnly? Date { get; set; }
+
+    public List<SelectListItem> Classes { get; set; } = [];
+
+    public List<SelectListItem> Courses { get; set; } = [];
+}
+
+public sealed class GradeSheetViewModel
+{
+    public required Rollcall.Application.Grades.GradeSheet Sheet { get; init; }
+
+    /// <summary>What the teacher typed, shown again when the sheet had errors.</summary>
+    public Dictionary<int, string?>? Posted { get; init; }
+
+    public Dictionary<int, string> Errors { get; init; } = [];
+}
+
+public sealed class StudentDetailViewModel
+{
+    public required StudentRow Student { get; init; }
+
+    public required Rollcall.Application.Attendance.StudentAttendance Attendance { get; init; }
+
+    public required Rollcall.Application.Grades.StudentGrades Grades { get; init; }
+}

@@ -1,0 +1,82 @@
+@model ExamListViewModel
+@{
+    ViewData["Title"] = "Sınavlar ve notlar";
+    var filtered = Model.ClassId is not null || Model.CourseId is not null;
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<div class="page-header">
+    <div>
+        <h1>Sınavlar ve notlar</h1>
+        <p>Sınıf ve ders bazında sınav tanımlayın, notları tek ekrandan girin.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create" asp-route-classId="@Model.ClassId"><i class="bi bi-plus-lg"></i>Yeni sınav</a>
+</div>
+
+<div class="card">
+    <form class="filter-bar" method="get" asp-action="Index">
+        <select class="form-select form-select-sm" name="classId" aria-label="Sınıf">
+            <option value="">Tüm sınıflar</option>
+            @foreach (var c in Model.Classes)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+        <select class="form-select form-select-sm" name="courseId" aria-label="Ders">
+            <option value="">Tüm dersler</option>
+            @foreach (var c in Model.Courses)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+        <button class="btn btn-outline-secondary btn-sm" type="submit">Filtrele</button>
+        @if (filtered)
+        {
+            <a class="btn btn-ghost btn-sm" asp-action="Index">Temizle</a>
+        }
+    </form>
+
+    @if (Model.Exams.Count == 0)
+    {
+        <partial name="Partials/_EmptyState" model="@(filtered
+            ? ("Sınav bulunamadı", "Filtreleri değiştirin ya da yeni bir sınav ekleyin.", "bi-search")
+            : ("Henüz sınav yok", "İlk sınavı tanımlayıp notları girmeye başlayın.", "bi-journal-text"))" />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 120px">Tarih</th>
+                        <th style="width: 72px">Sınıf</th>
+                        <th>Ders</th>
+                        <th>Sınav</th>
+                        <th class="num">Not girilen</th>
+                        <th class="num">Ortalama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model.Exams)
+                    {
+                        <tr>
+                            <td class="text-nowrap">
+                                @Display.ShortDate(e.Date)
+                                @if (e.Date > Model.Today)
+                                {
+                                    <span class="badge badge-accent ms-1">Yaklaşan</span>
+                                }
+                            </td>
+                            <td>@e.ClassName</td>
+                            <td>@e.CourseName</td>
+                            <td><a class="fw-medium" asp-action="Sheet" asp-route-id="@e.Id">@e.Title</a></td>
+                            <td class="num">@e.GradedCount / @e.StudentCount</td>
+                            <td class="num @Display.ScoreClass(e.Average)">@Display.Score(e.Average)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
