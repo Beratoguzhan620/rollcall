@@ -14,6 +14,10 @@
         <h1>Yoklama</h1>
         <p>Sınıfı ve günü seçin, her öğrenci için durumu işaretleyip tek seferde kaydedin.</p>
     </div>
+    @if (sheet is not null)
+    {
+        <partial name="Partials/_ExportMenu" model="@((Url.Action("Export", new { classId = sheet.ClassId, to = Iso(Model.Date > Model.Today ? Model.Today : Model.Date) })!, $"{sheet.ClassName} · seçili günden geriye 30 gün"))" />
+    }
 </div>
 
 <div class="card mb-3">

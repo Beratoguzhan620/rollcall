@@ -1,0 +1,16 @@
+@model (string Url, string Note)
+@* Model: the export URL with its query (without the format) and a short note on what the file contains. *@
+@{
+    var separator = Model.Url.Contains('?') ? "&" : "?";
+}
+<div class="dropdown">
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download"></i>Dışa aktar
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item d-flex align-items-center gap-2" href="@(Model.Url + separator)format=xlsx"><i class="bi bi-file-earmark-spreadsheet"></i>Excel (.xlsx)</a></li>
+        <li><a class="dropdown-item d-flex align-items-center gap-2" href="@(Model.Url + separator)format=csv"><i class="bi bi-filetype-csv"></i>CSV</a></li>
+        <li><hr class="dropdown-divider" /></li>
+        <li><span class="dropdown-item-text small text-muted">@Model.Note</span></li>
+    </ul>
+</div>

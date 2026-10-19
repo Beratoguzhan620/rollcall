@@ -26,6 +26,20 @@ public sealed class ExamsController(GradeService grades, Lookups lookups, TimePr
         });
     }
 
+    /// <summary>The grade book of one class: every student with every graded exam and the averages.</summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> Export(int classId, string? format)
+    {
+        var classes = await lookups.ClassesAsync(classId);
+        var name = classes.FirstOrDefault(c => c.Value == classId.ToString())?.Text;
+        if (name is null)
+            return NotFound();
+
+        var book = await grades.GetGradeBookAsync(classId);
+        var file = Exports.Build(book.Rows, Exports.GradeBookColumns(book), format, $"notlar-{name}", $"Notlar {name}");
+        return File(file.Content, file.ContentType, file.FileName);
+    }
+
     [HttpGet("new")]
     public async Task<IActionResult> Create(int? classId) =>
         await FormAsync(new ExamFormModel { ClassId = classId, Date = Rollcall.Data.SchoolTime.Today(timeProvider) });

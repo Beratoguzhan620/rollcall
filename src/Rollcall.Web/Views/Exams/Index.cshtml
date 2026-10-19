@@ -11,7 +11,17 @@
         <h1>Sınavlar ve notlar</h1>
         <p>Sınıf ve ders bazında sınav tanımlayın, notları tek ekrandan girin.</p>
     </div>
-    <a class="btn btn-primary" asp-action="Create" asp-route-classId="@Model.ClassId"><i class="bi bi-plus-lg"></i>Yeni sınav</a>
+    <div class="page-header-actions">
+        @if (Model.ClassId is int classId)
+        {
+            <partial name="Partials/_ExportMenu" model="@((Url.Action("Export", new { classId })!, "Sınıfın not çizelgesi ve ortalamaları"))" />
+        }
+        else
+        {
+            <button class="btn btn-outline-secondary" type="button" disabled title="Not çizelgesi için önce bir sınıf seçin"><i class="bi bi-download"></i>Dışa aktar</button>
+        }
+        <a class="btn btn-primary" asp-action="Create" asp-route-classId="@Model.ClassId"><i class="bi bi-plus-lg"></i>Yeni sınav</a>
+    </div>
 </div>
 
 <div class="card">

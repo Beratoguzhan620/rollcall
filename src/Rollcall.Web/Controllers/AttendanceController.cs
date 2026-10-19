@@ -26,6 +26,25 @@ public sealed class AttendanceController(AttendanceService attendance, Lookups l
         return View(new AttendanceViewModel { Sheet = sheet, Classes = classes, Date = day, Today = attendance.Today });
     }
 
+    /// <summary>Attendance of one class over a date range (the last 30 days by default) as Excel or CSV.</summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> Export(int classId, DateOnly? from, DateOnly? to, string? format)
+    {
+        var end = to ?? attendance.Today;
+        var start = from ?? end.AddDays(-30);
+        if (start > end)
+            (start, end) = (end, start);
+
+        var sheet = await attendance.GetSheetAsync(classId, end);
+        if (sheet is null)
+            return NotFound();
+
+        var rows = await attendance.GetRecordsAsync(classId, start, end);
+        var file = Exports.Build(rows, Exports.AttendanceColumns, format,
+            $"yoklama-{sheet.ClassName}-{start:yyyy-MM-dd}-{end:yyyy-MM-dd}", $"Yoklama {sheet.ClassName}");
+        return File(file.Content, file.ContentType, file.FileName);
+    }
+
     [HttpPost("")]
     public async Task<IActionResult> Save(int classId, DateOnly date, Dictionary<int, AttendanceStatus> statuses)
     {
