@@ -114,6 +114,62 @@ for (const [device, options] of Object.entries(viewports)) {
     expect((await page.locator(".class-card", { hasText: "9-C" }).count()) === 0, "the empty class should be deleted");
   }
 
+  await page.goto(`${baseUrl}/attendance`);
+  await shot(page, `${device}-attendance`);
+  expect((await page.locator("input.btn-check").count()) === 24 * 4, `${device}: the attendance sheet should list a demo class`);
+
+  await page.goto(`${baseUrl}/exams`);
+  await shot(page, `${device}-exams`);
+
+  await page.goto(`${baseUrl}/students/5`);
+  await shot(page, `${device}-student-records`);
+
+  if (device === "desktop") {
+    // Take attendance for the last class on a past school day and mark two students.
+    const options = await page.goto(`${baseUrl}/attendance`).then(() => page.locator("select[name=classId] option").all());
+    const lastClass = await options[options.length - 1].getAttribute("value");
+    await page.goto(`${baseUrl}/attendance?classId=${lastClass}`);
+    const absent = page.locator("label.att-absent").first();
+    await absent.click();
+    await page.locator("label.att-late").nth(1).click();
+    await shot(page, `${device}-attendance-marked`);
+    expect((await page.locator("[data-tally]").textContent()).includes("1 yok"), "the tally should count the absent student");
+    await Promise.all([page.waitForNavigation(), page.click("button:has-text('Yoklamayı kaydet')")]);
+    await shot(page, `${device}-attendance-saved`);
+    expect((await page.locator(".app-toast").textContent()).includes("1 devamsız"), "saving should report one absence");
+    expect((await page.locator("input.btn-check[value=Absent]:checked").count()) === 1, "the saved sheet should keep the absent mark");
+
+    // A future day cannot be taken.
+    const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    await page.goto(`${baseUrl}/attendance?classId=${lastClass}&date=${nextWeek}`);
+    expect(await page.locator("button:has-text('Yoklamayı kaydet')").isDisabled(), "future days should be read-only");
+
+    // New exam and grades.
+    await page.goto(`${baseUrl}/exams/new`);
+    await page.selectOption("#ClassId", { label: "9-A" });
+    await page.selectOption("#CourseId", { label: "Kimya" });
+    await page.fill("#Title", "Kısa sınav");
+    await submit(page);
+    await shot(page, `${device}-exam-sheet-empty`);
+    const inputs = page.locator("input.score-input");
+    await inputs.nth(0).fill("105");
+    await inputs.nth(1).fill("72,5");
+    await inputs.nth(2).fill("88.25");
+    await Promise.all([page.waitForNavigation(), page.click("button:has-text('Notları kaydet')")]);
+    await shot(page, `${device}-exam-sheet-error`);
+    expect((await page.locator(".field-validation-error").count()) === 1, "a score above 100 should be flagged on its row");
+    expect((await inputs.nth(1).inputValue()) === "72,5", "typed scores should be kept after an error");
+    await inputs.nth(0).fill("45");
+    await Promise.all([page.waitForNavigation(), page.click("button:has-text('Notları kaydet')")]);
+    await shot(page, `${device}-exam-sheet-saved`);
+    expect((await inputs.nth(2).inputValue()) === "88,25", "a dot decimal should be saved as 88,25");
+
+    // A student with records cannot be deleted.
+    await page.goto(`${baseUrl}/students/5`);
+    await confirm(page, "button:has-text('Sil')");
+    expect((await page.locator(".alert-danger").textContent()).includes("okuldan ayrıldı"), "deleting a student with records should be refused");
+  }
+
   await page.goto(`${baseUrl}/students/99999`);
   await shot(page, `${device}-not-found`);
 
