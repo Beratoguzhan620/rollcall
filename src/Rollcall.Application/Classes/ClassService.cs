@@ -66,6 +66,9 @@ public sealed class ClassService(AppDbContext context, TimeProvider timeProvider
         if (students > 0)
             return Result.Invalid($"{entity.Name} sınıfında {students} öğrenci kayıtlı. Önce öğrencileri başka bir sınıfa taşıyın.");
 
+        if (await context.Exams.AnyAsync(e => e.ClassId == id) || await context.Attendance.AnyAsync(a => a.ClassId == id))
+            return Result.Invalid($"{entity.Name} sınıfının yoklama ya da sınav kayıtları var; silinemez.");
+
         context.Classes.Remove(entity);
         await context.SaveChangesAsync();
         return Result.Ok($"{entity.Name} sınıfı silindi.");

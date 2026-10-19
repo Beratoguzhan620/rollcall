@@ -107,6 +107,10 @@ public sealed class StudentService(AppDbContext context, TimeProvider timeProvid
         if (entity is null)
             return Result.NotFound("Öğrenci bulunamadı.");
 
+        var hasRecords = await context.Attendance.AnyAsync(a => a.StudentId == id) || await context.Grades.AnyAsync(g => g.StudentId == id);
+        if (hasRecords)
+            return Result.Invalid($"{entity.FullName} için yoklama ya da not kaydı var. Silmek yerine öğrenciyi \"okuldan ayrıldı\" olarak işaretleyin.");
+
         context.Students.Remove(entity);
         await context.SaveChangesAsync();
         return Result.Ok($"{entity.FullName} silindi.");
