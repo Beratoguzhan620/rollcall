@@ -8,9 +8,9 @@
 <div class="page-header">
     <div>
         <h1>Özet</h1>
-        <p>Okulun sınıfları ve öğrenci sayıları.</p>
+        <p>@Display.Date(Model.Today) · bugünkü yoklama ve devamsızlığı yüksek öğrenciler.</p>
     </div>
-    <a class="btn btn-primary" asp-controller="Students" asp-action="Create"><i class="bi bi-person-plus"></i>Öğrenci ekle</a>
+    <a class="btn btn-primary" asp-controller="Attendance" asp-action="Index"><i class="bi bi-check2-square"></i>Yoklama al</a>
 </div>
 
 <div class="stat-grid">
@@ -24,15 +24,79 @@
         <span class="value">@Display.Number(Model.StudentCount)</span>
         <span class="hint">okulda kayıtlı</span>
     </a>
+    <a class="stat-card" asp-controller="Attendance" asp-action="Index">
+        <span class="label"><i class="bi bi-check2-square"></i>Bugünkü yoklama</span>
+        <span class="value">@Model.TakenToday / @Model.ClassCount</span>
+        <span class="hint">sınıfta alındı</span>
+    </a>
     <div class="stat-card">
-        <span class="label"><i class="bi bi-person-dash"></i>Ayrılan</span>
-        <span class="value">@Model.InactiveCount</span>
-        <span class="hint">kaydı korunan eski öğrenci</span>
+        <span class="label"><i class="bi bi-person-x"></i>Bugün devamsız</span>
+        <span class="value @(Model.AbsentToday > 0 ? "score-low" : null)">@Model.AbsentToday</span>
+        <span class="hint">yoklaması alınan sınıflarda</span>
     </div>
-    <div class="stat-card">
-        <span class="label"><i class="bi bi-diagram-3"></i>Sınıf mevcudu</span>
-        <span class="value">@(Model.ClassCount == 0 ? "—" : Math.Round(Model.StudentCount / (double)Model.ClassCount).ToString())</span>
-        <span class="hint">ortalama öğrenci</span>
+</div>
+
+<div class="detail-layout mb-3">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 m-0">Bugünkü yoklama</h2>
+            <a class="small" asp-controller="Attendance" asp-action="Index">Yoklama al</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Sınıf</th>
+                        <th>Durum</th>
+                        <th class="num">Yok</th>
+                        <th class="num">Geç</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.TodayByClass)
+                    {
+                        <tr>
+                            <td><a class="fw-medium" asp-controller="Attendance" asp-action="Index" asp-route-classId="@c.ClassId">@c.ClassName</a></td>
+                            <td>
+                                @if (c.IsTaken)
+                                {
+                                    <span class="badge badge-success">Alındı</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">Bekliyor</span>
+                                }
+                            </td>
+                            <td class="num @(c.Absent > 0 ? "score-low" : null)">@(c.IsTaken ? c.Absent.ToString() : "—")</td>
+                            <td class="num">@(c.IsTaken ? c.Late.ToString() : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2 class="h6 m-0">Devamsızlığı yüksek</h2></div>
+        @if (Model.MostAbsent.Count == 0)
+        {
+            <p class="text-muted small m-3">3 günden fazla devamsızlığı olan öğrenci yok.</p>
+        }
+        else
+        {
+            <ul class="list-unstyled m-0 absence-list">
+                @foreach (var s in Model.MostAbsent)
+                {
+                    <li>
+                        <span class="min-w-0">
+                            <a class="fw-medium" asp-controller="Students" asp-action="Detail" asp-route-id="@s.StudentId">@s.FullName</a>
+                            <span class="text-muted small d-block">@s.ClassName · @s.Late geç</span>
+                        </span>
+                        <span class="badge badge-danger">@s.Absent gün</span>
+                    </li>
+                }
+            </ul>
+        }
     </div>
 </div>
 

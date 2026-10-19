@@ -176,9 +176,40 @@
         jQuery(field).valid();
     });
 
+    // ---------- Attendance sheet ----------
+    const statusNames = { Present: "var", Absent: "yok", Late: "geç", Excused: "izinli" };
+
+    function updateTally(form) {
+        const tally = form.querySelector("[data-tally]");
+        if (!tally) return;
+        const counts = { Present: 0, Absent: 0, Late: 0, Excused: 0 };
+        form.querySelectorAll("input.btn-check:checked").forEach((input) => { counts[input.value]++; });
+        const badges = { Present: "badge-success", Absent: "badge-danger", Late: "badge-warning", Excused: "badge-neutral" };
+        tally.replaceChildren(...Object.entries(counts).map(([key, count]) => {
+            const badge = document.createElement("span");
+            badge.className = `badge ${badges[key]}`;
+            badge.textContent = `${count} ${statusNames[key]}`;
+            return badge;
+        }));
+    }
+
+    document.addEventListener("change", (event) => {
+        const form = event.target.closest("form[data-attendance]");
+        if (form) updateTally(form);
+    });
+
+    document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-all-present]");
+        if (!button) return;
+        const form = button.closest("form");
+        form.querySelectorAll("input.btn-check[value=Present]").forEach((input) => { input.checked = true; });
+        updateTally(form);
+    });
+
     // ---------- Boot ----------
     document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll("[data-toast]").forEach(mountToast);
+        document.querySelectorAll("form[data-attendance]").forEach(updateTally);
     });
 
     window.Rollcall = { toast: showToast };

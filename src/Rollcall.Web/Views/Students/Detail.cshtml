@@ -1,6 +1,8 @@
-@model StudentRow
+@model StudentDetailViewModel
 @{
-    ViewData["Title"] = Model.FullName;
+    var s = Model.Student;
+    var summary = Model.Attendance.Summary;
+    ViewData["Title"] = s.FullName;
 }
 
 <partial name="Partials/_ViewMessages" />
@@ -8,19 +10,23 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a asp-action="Index">Öğrenciler</a></li>
-        <li class="breadcrumb-item active" aria-current="page">@Model.FullName</li>
+        <li class="breadcrumb-item active" aria-current="page">@s.FullName</li>
     </ol>
 </nav>
 
 <div class="page-header">
     <div class="d-flex align-items-center gap-3">
-        <span class="avatar avatar-lg" aria-hidden="true">@Display.Initials(Model.FirstName, Model.LastName)</span>
+        <span class="avatar avatar-lg" aria-hidden="true">@Display.Initials(s.FirstName, s.LastName)</span>
         <div>
-            <h1>@Model.FullName</h1>
+            <h1>@s.FullName</h1>
             <p class="mt-1">
-                <span class="font-mono">@Model.StudentNumber</span> ·
-                <a asp-controller="Classes" asp-action="Detail" asp-route-id="@Model.ClassId">@Model.ClassName sınıfı</a>
-                @if (!Model.IsActive)
+                <span class="font-mono">@s.StudentNumber</span> ·
+                <a asp-controller="Classes" asp-action="Detail" asp-route-id="@s.ClassId">@s.ClassName sınıfı</a>
+                @if (s.Email is not null)
+                {
+                    <text> · @s.Email</text>
+                }
+                @if (!s.IsActive)
                 {
                     <span class="badge badge-neutral ms-1">Okuldan ayrıldı</span>
                 }
@@ -28,27 +34,119 @@
         </div>
     </div>
     <div class="page-header-actions">
-        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i>Düzenle</a>
-        <form method="post" asp-action="Delete" asp-route-id="@Model.Id">
+        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@s.Id"><i class="bi bi-pencil"></i>Düzenle</a>
+        <form method="post" asp-action="Delete" asp-route-id="@s.Id">
             <button class="btn btn-outline-danger" type="submit"
-                    data-confirm="@Model.FullName kalıcı olarak silinecek. Okuldan ayrılan öğrenciler için silmek yerine &quot;Okulda kayıtlı&quot; işaretini kaldırın."
+                    data-confirm="@s.FullName kalıcı olarak silinecek. Yoklama ya da not kaydı olan öğrenci silinemez; bunun yerine &quot;Okulda kayıtlı&quot; işaretini kaldırın."
                     data-confirm-title="Öğrenciyi sil" data-confirm-ok="Sil"><i class="bi bi-trash"></i>Sil</button>
         </form>
     </div>
 </div>
 
-<div class="card" style="max-width: 560px">
-    <div class="card-header"><h2 class="h6 m-0">Bilgiler</h2></div>
-    <div class="card-body">
-        <dl class="spec-list mb-0">
-            <dt>Okul numarası</dt>
-            <dd class="font-mono">@Model.StudentNumber</dd>
-            <dt>Sınıf</dt>
-            <dd>@Model.ClassName</dd>
-            <dt>E-posta</dt>
-            <dd>@(Model.Email ?? "—")</dd>
-            <dt>Durum</dt>
-            <dd>@(Model.IsActive ? "Okulda kayıtlı" : "Okuldan ayrıldı")</dd>
-        </dl>
+<div class="stat-grid">
+    <div class="stat-card">
+        <span class="label"><i class="bi bi-check2-circle"></i>Devam oranı</span>
+        <span class="value">@Display.Percent(summary.PresenceRate)</span>
+        <span class="hint">@summary.Total kayıtlı gün</span>
     </div>
+    <div class="stat-card">
+        <span class="label"><i class="bi bi-x-circle"></i>Devamsız</span>
+        <span class="value @(summary.Absent >= 5 ? "score-low" : null)">@summary.Absent</span>
+        <span class="hint">gün</span>
+    </div>
+    <div class="stat-card">
+        <span class="label"><i class="bi bi-clock-history"></i>Geç</span>
+        <span class="value">@summary.Late</span>
+        <span class="hint">gün</span>
+    </div>
+    <div class="stat-card">
+        <span class="label"><i class="bi bi-journal-check"></i>Genel ortalama</span>
+        <span class="value @Display.ScoreClass(Model.Grades.Overall)">@Display.Score(Model.Grades.Overall)</span>
+        <span class="hint">ders ortalamalarının ortalaması</span>
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="d-flex flex-column gap-3 min-w-0">
+        <div class="card">
+            <div class="card-header"><h2 class="h6 m-0">Ders ortalamaları</h2></div>
+            <div class="card-body">
+                @if (Model.Grades.Courses.Count == 0)
+                {
+                    <p class="text-muted small m-0">Henüz not girilmedi.</p>
+                }
+                else
+                {
+                    <div class="course-bars" role="img" aria-label="Ders ortalamaları grafiği; çizgi geçme notu olan 50'yi gösterir">
+                        @foreach (var course in Model.Grades.Courses)
+                        {
+                            var average = course.Average ?? 0;
+                            <div class="course-bar">
+                                <span class="text-truncate">@course.CourseName</span>
+                                <span class="course-bar-track @(average < 50 ? "is-low" : null)"><span style="width: @(Math.Round(average).ToString(System.Globalization.CultureInfo.InvariantCulture))%"></span></span>
+                                <span class="num font-mono @Display.ScoreClass(course.Average)">@Display.Score(course.Average)</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.Grades.Courses.Count > 0)
+        {
+            <div class="card">
+                <div class="card-header"><h2 class="h6 m-0">Not tablosu</h2></div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ders</th>
+                                <th>Sınavlar</th>
+                                <th class="num">Ortalama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var course in Model.Grades.Courses)
+                            {
+                                <tr>
+                                    <td class="fw-medium">@course.CourseName</td>
+                                    <td>
+                                        @foreach (var score in course.Scores)
+                                        {
+                                            <span class="score-chip" title="@score.Title · @Display.ShortDate(score.Date)">
+                                                <span class="text-muted">@score.Title</span>
+                                                <span class="font-mono @Display.ScoreClass(score.Score)">@Display.Score(score.Score)</span>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="num @Display.ScoreClass(course.Average)">@Display.Score(course.Average)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+    <aside class="card">
+        <div class="card-header"><h2 class="h6 m-0">Devamsızlık ve geç kalma</h2></div>
+        @if (Model.Attendance.Recent.Count == 0)
+        {
+            <p class="text-muted small m-3">Devamsızlık ya da geç kalma kaydı yok.</p>
+        }
+        else
+        {
+            <ul class="list-unstyled m-0 absence-list">
+                @foreach (var day in Model.Attendance.Recent)
+                {
+                    <li>
+                        <span>@Display.ShortDate(day.Date)</span>
+                        <span class="@Display.StatusBadge(day.Status)">@Display.Status(day.Status)</span>
+                    </li>
+                }
+            </ul>
+        }
+        <div class="card-footer small text-muted">İzinli: @summary.Excused gün · Var: @summary.Present gün</div>
+    </aside>
 </div>

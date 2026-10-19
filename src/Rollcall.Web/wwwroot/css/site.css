@@ -301,3 +301,115 @@ a.stat-card:hover { border-color: #C9C5BC; color: var(--rc-text); }
     border-top: 1px solid var(--rc-border);
     font-size: var(--rc-text-sm);
 }
+
+/* ---------- Attendance ---------- */
+
+.attendance-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.attendance-tally { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.att-choice {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border: 0;
+    margin: 0;
+    background: var(--rc-surface-2);
+    border-radius: var(--rc-radius-sm);
+}
+
+.att-option {
+    min-width: 52px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: var(--rc-text-sm);
+    font-weight: 500;
+    color: var(--rc-text-muted);
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.att-option:hover { color: var(--rc-text); }
+
+.btn-check:focus-visible + .att-option { outline: 2px solid var(--rc-accent); outline-offset: 1px; }
+
+.btn-check:checked + .att-present { background: var(--rc-surface); color: var(--rc-success); box-shadow: var(--rc-shadow); }
+.btn-check:checked + .att-absent { background: var(--rc-danger); color: #fff; }
+.btn-check:checked + .att-late { background: var(--rc-warning); color: #fff; }
+.btn-check:checked + .att-excused { background: var(--rc-primary); color: #fff; }
+
+.att-choice:disabled .att-option { cursor: not-allowed; opacity: .6; }
+
+.attendance-table tr:has(.btn-check:checked[value=Absent]) td:not(:last-child) { color: var(--rc-danger); }
+
+@media (max-width: 575.98px) {
+    .attendance-table thead { display: none; }
+    .attendance-table tr { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; padding: 10px 12px; border-bottom: 1px solid var(--rc-border); }
+    .attendance-table td { border: 0; padding: 0; }
+    .attendance-table td:last-child { grid-column: 1 / -1; text-align: left !important; }
+    .att-choice { display: flex; }
+    .att-option { flex: 1; min-width: 0; }
+}
+
+/* ---------- Grades ---------- */
+
+.score-low { color: var(--rc-danger); font-weight: 500; }
+
+.score-high { color: var(--rc-success); font-weight: 500; }
+
+.score-input { max-width: 110px; margin-left: auto; text-align: right; font-family: var(--rc-font-mono); }
+
+.course-bars { display: grid; gap: 10px; }
+
+.course-bar { display: grid; grid-template-columns: 160px minmax(0, 1fr) 52px; gap: 12px; align-items: center; font-size: var(--rc-text-sm); }
+
+.course-bar-track { height: 8px; background: var(--rc-surface-2); border-radius: 999px; overflow: hidden; position: relative; }
+
+.course-bar-track span { display: block; height: 100%; background: var(--rc-accent); border-radius: inherit; }
+
+.course-bar-track.is-low span { background: var(--rc-danger); }
+
+.course-bar-track::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -2px;
+    bottom: -2px;
+    width: 1px;
+    background: var(--rc-text-muted);
+    opacity: .4;
+}
+
+@media (max-width: 575.98px) {
+    .course-bar { grid-template-columns: minmax(0, 1fr) 52px; }
+    .course-bar-track { grid-column: 1 / -1; grid-row: 2; }
+}
+
+.absence-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    font-size: var(--rc-text-sm);
+}
+
+.absence-list li + li { border-top: 1px solid var(--rc-surface-2); }
+
+.score-chip {
+    display: inline-flex;
+    gap: 6px;
+    padding: 2px 8px;
+    margin: 2px 4px 2px 0;
+    border: 1px solid var(--rc-border);
+    border-radius: 999px;
+    font-size: var(--rc-text-xs);
+    white-space: nowrap;
+}

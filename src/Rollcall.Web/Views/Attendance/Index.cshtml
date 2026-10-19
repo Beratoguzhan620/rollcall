@@ -1,0 +1,116 @@
+@model AttendanceViewModel
+@{
+    ViewData["Title"] = "Yoklama";
+    var sheet = Model.Sheet;
+    var statuses = new[] { AttendanceStatus.Present, AttendanceStatus.Absent, AttendanceStatus.Late, AttendanceStatus.Excused };
+    string Iso(DateOnly d) => d.ToString("yyyy-MM-dd");
+    var future = Model.Date > Model.Today;
+}
+
+<partial name="Partials/_ViewMessages" />
+
+<div class="page-header">
+    <div>
+        <h1>Yoklama</h1>
+        <p>Sınıfı ve günü seçin, her öğrenci için durumu işaretleyip tek seferde kaydedin.</p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <form class="filter-bar border-0" method="get" asp-action="Index">
+        <select class="form-select form-select-sm" name="classId" aria-label="Sınıf">
+            @foreach (var c in Model.Classes)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+        <div class="d-flex align-items-center gap-1">
+            <a class="btn btn-outline-secondary btn-sm" asp-action="Index" asp-route-classId="@sheet?.ClassId" asp-route-date="@Iso(Model.Date.AddDays(-1))" aria-label="Önceki gün"><i class="bi bi-chevron-left m-0"></i></a>
+            <input class="form-control form-control-sm date-input" type="date" name="date" value="@Iso(Model.Date)" max="@Iso(Model.Today)" aria-label="Tarih" />
+            <a class="btn btn-outline-secondary btn-sm @(Model.Date >= Model.Today ? "disabled" : null)" asp-action="Index" asp-route-classId="@sheet?.ClassId" asp-route-date="@Iso(Model.Date.AddDays(1))" aria-label="Sonraki gün"><i class="bi bi-chevron-right m-0"></i></a>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" type="submit">Göster</button>
+        @if (Model.Date != Model.Today)
+        {
+            <a class="btn btn-ghost btn-sm" asp-action="Index" asp-route-classId="@sheet?.ClassId">Bugün</a>
+        }
+    </form>
+</div>
+
+@if (sheet is null)
+{
+    <div class="card">
+        <partial name="Partials/_EmptyState" model="@(("Önce bir sınıf ekleyin", "Yoklama almak için en az bir sınıf ve öğrenci gerekir.", "bi-grid-3x2-gap"))" />
+    </div>
+}
+else
+{
+    <form class="card" method="post" asp-action="Save" data-attendance>
+        <input type="hidden" name="classId" value="@sheet.ClassId" />
+        <input type="hidden" name="date" value="@Iso(sheet.Date)" />
+
+        <div class="card-header attendance-head">
+            <div>
+                <h2 class="h6 m-0">@sheet.ClassName · @Display.Date(sheet.Date)</h2>
+                <p class="small text-muted m-0 mt-1">
+                    @if (future)
+                    {
+                        <text>İleri bir tarih için yoklama alınamaz.</text>
+                    }
+                    else if (sheet.IsTaken)
+                    {
+                        <text>Yoklama alınmış: @sheet.Count(AttendanceStatus.Present) var, @sheet.Count(AttendanceStatus.Absent) yok, @sheet.Count(AttendanceStatus.Late) geç, @sheet.Count(AttendanceStatus.Excused) izinli. Değiştirip yeniden kaydedebilirsiniz.</text>
+                    }
+                    else
+                    {
+                        <text>Henüz yoklama alınmadı. Herkes "Var" olarak başlar; gelmeyenleri işaretleyin.</text>
+                    }
+                </p>
+            </div>
+            <div class="attendance-tally" aria-live="polite" data-tally></div>
+        </div>
+
+        @if (sheet.Rows.Count == 0)
+        {
+            <partial name="Partials/_EmptyState" model="@(("Bu sınıfta öğrenci yok", "Önce sınıfa öğrenci ekleyin.", "bi-people"))" />
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table mb-0 attendance-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 96px">Numara</th>
+                            <th>Öğrenci</th>
+                            <th class="text-end">Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in sheet.Rows)
+                        {
+                            var current = row.Status ?? AttendanceStatus.Present;
+                            <tr>
+                                <td class="font-mono text-muted">@row.StudentNumber</td>
+                                <td class="fw-medium">@row.FullName</td>
+                                <td class="text-end">
+                                    <fieldset class="att-choice" aria-label="@row.FullName için durum" disabled="@future">
+                                        @foreach (var status in statuses)
+                                        {
+                                            var inputId = $"s{row.StudentId}-{(int)status}";
+                                            <input type="radio" class="btn-check" name="statuses[@row.StudentId]" id="@inputId" value="@status" checked="@(current == status)" autocomplete="off" />
+                                            <label class="att-option att-@status.ToString().ToLowerInvariant()" for="@inputId">@Display.Status(status)</label>
+                                        }
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex flex-wrap justify-content-between gap-2">
+                <button class="btn btn-ghost" type="button" data-all-present disabled="@future">Hepsini "Var" yap</button>
+                <button class="btn btn-primary" type="submit" disabled="@future">Yoklamayı kaydet</button>
+            </div>
+        }
+    </form>
+}
