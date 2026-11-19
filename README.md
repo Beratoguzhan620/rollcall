@@ -12,6 +12,8 @@ A school management panel for classes, students, daily attendance and grades, wi
 
 ## Try it
 
+**Live demo:** [rollcall-demo.onrender.com](https://rollcall-demo.onrender.com). A high school with five classes and 120 students: today's attendance is taken in most classes, and past exams are graded. It runs on a free server with SQLite inside the container, so every restart starts again from the same data; after a quiet spell the first visit can take about a minute.
+
 ```bash
 docker compose up --build
 ```
@@ -128,7 +130,6 @@ It fails if a page scrolls sideways.
 
 ## Roadmap and known gaps
 
-- Live demo.
 - Sign-in with roles for teachers and the school office.
 - Attendance per lesson rather than per day.
 - Messages to parents about absences.
