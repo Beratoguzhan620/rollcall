@@ -29,7 +29,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.Configure<WebEncoderOptions>(options =>
     options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 
-builder.Services.AddRollcallData(builder.Configuration.GetConnectionString("DefaultConnection"));
+builder.Services.AddRollcallData(builder.Configuration.GetConnectionString("DefaultConnection"), builder.Configuration["Database:Provider"]);
 builder.Services.AddRollcallServices();
 builder.Services.AddScoped<Lookups>();
 
