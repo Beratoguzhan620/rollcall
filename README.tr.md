@@ -12,6 +12,8 @@ Sınıf, öğrenci, günlük yoklama ve not takibi yapan; verileri Excel ya da C
 
 ## Dene
 
+**Canlı demo:** [rollcall-demo.onrender.com](https://rollcall-demo.onrender.com). Beş sınıfı ve 120 öğrencisiyle bir lise: bugünkü yoklama sınıfların çoğunda alınmış, geçmiş sınavlar notlandırılmış. Ücretsiz bir sunucuda, veritabanı konteynerin içinde SQLite olarak çalışıyor; her yeniden başlatmada aynı verilerle baştan açılır. Bir süre kimse açmadıysa ilk açılış bir dakika kadar sürebilir.
+
 ```bash
 docker compose up --build
 ```
@@ -128,7 +130,6 @@ Sayfa yana kayarsa test başarısız olur.
 
 ## Yol haritası ve bilinen eksikler
 
-- Canlı demo.
 - Öğretmen ve okul idaresi için rollü giriş.
 - Gün yerine ders saati bazında yoklama.
 - Devamsızlıkta veliye bildirim.
