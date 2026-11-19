@@ -17,6 +17,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Grade> Grades => Set<Grade>();
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // SQLite (the public demo) has no decimal type: EF stores decimals as text there, which cannot be ordered,
+        // summed or range-checked. As REAL they can; scores stay well within its precision. SQL Server keeps decimal.
+        if (Database.IsSqlite())
+            configurationBuilder.Properties<decimal>().HaveConversion<double>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SchoolClass>(entity =>

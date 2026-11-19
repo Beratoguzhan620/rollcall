@@ -29,6 +29,9 @@ public sealed class SqliteDemoTests : IDisposable
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         Assert.Equal(5, await context.Classes.CountAsync());
         Assert.True(await context.Attendance.AnyAsync());
+        // Scores are range-checked, ordered and averaged in SQL on SQLite too (stored as REAL there).
+        Assert.InRange(await context.Grades.AverageAsync(g => g.Score), 15m, 100m);
+        Assert.True(await context.Grades.OrderByDescending(g => g.Score).Select(g => g.Score).FirstAsync() <= 100m);
     }
 
     [Fact]
